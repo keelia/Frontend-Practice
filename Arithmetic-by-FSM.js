@@ -4,36 +4,32 @@
  * <AddictiveExpression>::= <MultiplicativeExpression> | 
  *                          <AddictiveExpression> + <MultiplicativeExpression> |
  *                          <AddictiveExpression> - <MultiplicativeExpression>
- * <MultiplicativeExpression>:: = <Number> | 
- *                                 <MultiplicativeExpression> * <Number>
- *                                 <MultiplicativeExpression> / <Number>
- * <Number>:: = [0-9] | [1-9][0-9]?.[0-9]?
+ * <MultiplicativeExpression>:: = <Decimal> | 
+ *                                 <MultiplicativeExpression> * <Decimal>
+ *                                 <MultiplicativeExpression> / <Decimal>
+ * <Decimal>:: = [0-9] | [1-9][0-9]?.[0-9]?
  */
 
  /**
   * 2. Lexical Analysis : Convert string stream to token stream
-  * Token: Number | Operator
+  * Token: Decimal | Operator
   * Whitespace :<SP>
   * Lineterminator:<LF><CR>
   * Method:1.FSM 2. Reg
   */
 const tests = [
     {
-        input:'1024 / 2 + 256 / 2',
-        expect:(1024 / 2 + 256 / 2)
-    },
-    {
-        input:'1024 + 2 + 256 / 2',
-        expect:(1024 + 2 + 256 / 2)
+        input:'-10.24 + 2 + 256 / 2',
+        expect:(-10.24 + 2 + 256 / 2)
     }
 ]
-const num = ['0','1','2','3','4','5','6','7','8','9']
+const num = ['0','1','2','3','4','5','6','7','8','9','.']
 const oper = ['+','-','*','/']
 const other = ['\u0020','\u000A','\u000D']
 const eof = Symbol('EOF')
 const tokens = []
 const tokenStack = []
-const validTokenType = ['Number','Operator']
+const validTokenType = ['Decimal','Operator']
 
 function tokenize(source){
     let state = start
@@ -51,6 +47,11 @@ function tokenize(source){
 tests.map(item=>{
     console.log('Exprect : ',tokenize(item.input), 'To be :', item.expect)
 })
+
+function isDecimal(str){
+    const reg = /^([0-9]|[1-9][0-9]+)?(.[0-9]+)?$/
+    return reg.test(str)
+}
 function start(c){
     if(num.some(item=>item === c)){
         tokens.push(c)
@@ -73,7 +74,7 @@ function onNumber(c){
     }else if(c === eof){
         if(tokens.length>0){
             emitToken({
-                type:'Number',
+                type:'Decimal',
                 value:tokens.join('')
             })
             tokens.length = 0
@@ -83,7 +84,7 @@ function onNumber(c){
         })
     }else{
         emitToken({
-            type:'Number',
+            type:'Decimal',
             value:tokens.join('')
         })
         tokens.length = 0
@@ -93,6 +94,15 @@ function onNumber(c){
 
 
 function emitToken(token){
+    if(token.type === 'Decimal'){
+        const isValidDecimal = isDecimal(token.value)
+        if(!isValidDecimal){
+            throw(new Error('TypeError: Not a valid decimal'))
+        }
+    }
+    if(token.value === oper[1] && (!tokenStack || tokenStack.length == 0)){
+        tokenStack.push({type:'Decimal',value:'0'})
+    }
     tokenStack.push(token)
 }
 /**
@@ -141,9 +151,9 @@ function AddictiveExpression(source){
 
 function MultiplicativeExpression(source){
 /** 
-* <MultiplicativeExpression>:: = <Number> | 
-*                                 <MultiplicativeExpression> * <Number>
-*                                  <MultiplicativeExpression> / <Number>
+* <MultiplicativeExpression>:: = <Decimal> | 
+*                                 <MultiplicativeExpression> * <Decimal>
+*                                  <MultiplicativeExpression> / <Decimal>
 */ 
 //console.log('MultiplicativeExpression',source)
     if(source[0].type === validTokenType[0]){
