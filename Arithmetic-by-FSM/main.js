@@ -1,5 +1,5 @@
 import {TestExpression} from './test.js'
-import {tokenize} from './Arithmetic-by-FSM.js'
+import {tokenize} from './arithmetic-calculation-lib.js'
 
 TestExpression.map(item=>{
     calculate(item.input,document.getElementById('result'))
