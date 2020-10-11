@@ -1,9 +1,9 @@
 /**
  * 1. Define Arithmetic by BNF
- * <Expression>:: = <AddictiveExpression><EOF>
- * <AddictiveExpression>::= <MultiplicativeExpression> | 
- *                          <AddictiveExpression> + <MultiplicativeExpression> |
- *                          <AddictiveExpression> - <MultiplicativeExpression>
+ * <Expression>:: = <AdditiveExpression><EOF>
+ * <AdditiveExpression>::= <MultiplicativeExpression> | 
+ *                          <AdditiveExpression> + <MultiplicativeExpression> |
+ *                          <AdditiveExpression> - <MultiplicativeExpression>
  * <MultiplicativeExpression>:: = <Decimal> | 
  *                                 <MultiplicativeExpression> * <Decimal>
  *                                 <MultiplicativeExpression> / <Decimal>
@@ -17,39 +17,32 @@
   * Lineterminator:<LF><CR>
   * Method:1.FSM 2. Reg
   */
-const tests = [
-    {
-        input:'-10.24 + 2 + 256 / 2',
-        expect:(-10.24 + 2 + 256 / 2)
-    }
-]
+
 const num = ['0','1','2','3','4','5','6','7','8','9','.']
 const oper = ['+','-','*','/']
+const groupingOper = ['(',')']
 const other = ['\u0020','\u000A','\u000D']
 const eof = Symbol('EOF')
 const tokens = []
 const tokenStack = []
-const validTokenType = ['Decimal','Operator']
+const validTokenType = ['Decimal','Operator','Grouping Operator']
 
-function tokenize(source){
+export function tokenize(source){
+    console.log('Source',source)
     let state = start
     for (const char of source) {
         state = state(char)
     }
     state(eof)
-
+    // console.log(tokenStack)
     const ast = Expression(tokenStack)
     tokenStack.length = 0
-    
+    // console.log(ast)
     return evaluate(ast)
 }
 
-tests.map(item=>{
-    console.log('Exprect : ',tokenize(item.input), 'To be :', item.expect)
-})
-
 function isDecimal(str){
-    const reg = /^([0-9]|[1-9][0-9]+)?(.[0-9]+)?$/
+    const reg = /^-?([0-9]|[1-9][0-9]+)?(.[0-9]+)?$/
     return reg.test(str)
 }
 function start(c){
@@ -57,13 +50,40 @@ function start(c){
         tokens.push(c)
         return onNumber
     }else if(oper.some(op=>op===c)){
+        const previousToken = tokenStack[tokenStack.length-1]
+        if(previousToken){
+            if(previousToken.type === validTokenType[1]){
+                throw(new Error('Expression Syntax Error: Not a valid expression'))
+            }else if(previousToken.type === validTokenType[2] && previousToken.value === groupingOper[0]){
+                if((c === oper[0] ) || (c === oper[2] )|| (c === oper[3])){
+                    throw(new Error('Expression Syntax Error: Not a valid expression'))
+                }
+            }
+            
+        }
+        if(c === '-'){
+            if(!previousToken || (previousToken.type === validTokenType[2])){
+                tokens.push(c)
+                return onNumber
+            }
+        }
         emitToken({
             type:'Operator',
             value:c
         })
         return start
+    }else if(groupingOper.some(op=>op===c)){
+        emitToken({
+            type:'Grouping Operator',
+            value:c
+        })
+        return start
     }else if(other.some(ot=>ot === c)){
         return start
+    }else if(c === eof){
+        emitToken({
+            type:eof
+        })
     }
 }
 
@@ -100,53 +120,76 @@ function emitToken(token){
             throw(new Error('TypeError: Not a valid decimal'))
         }
     }
-    if(token.value === oper[1] && (!tokenStack || tokenStack.length == 0)){
-        tokenStack.push({type:'Decimal',value:'0'})
-    }
     tokenStack.push(token)
 }
 /**
  * 3. Syntax Analisis: LL
  * write function regards BNF
  */
-function AddictiveExpression(source){
-/* <AddictiveExpression>::= <MultiplicativeExpression> | 
-                           <AddictiveExpression> + <MultiplicativeExpression> |
-                           <AddictiveExpression> - <MultiplicativeExpression> */
-   // console.log('AddictiveExpression',source)
-    if(source[0].type === 'MultiplicativeExpression'){
+
+ function PrimaryExpression(source){
+    // console.log('PrimaryExpression',JSON.stringify(source))
+    // debugger
+    if(source[0].value === groupingOper[0]){//(
         let node = {
-            type:'AddictiveExpression',
+            type:'PrimaryExpression',
+            children:[source.shift()]
+        }
+
+        AdditiveExpression(source)
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        source.unshift(node)
+        return PrimaryExpression(source)
+    }
+    if(source[0].type === 'PrimaryExpression'){
+        return source[0]
+    }
+ }
+function AdditiveExpression(source){
+/* <AdditiveExpression>::= <MultiplicativeExpression> | 
+                           <AdditiveExpression> + <MultiplicativeExpression> |
+                           <AdditiveExpression> - <MultiplicativeExpression> */
+//    console.log('AdditiveExpression',JSON.stringify(source))
+//    debugger
+   if(source[0].value === groupingOper[0]){//(
+        PrimaryExpression(source)
+        return AdditiveExpression(source)
+    }
+   if(source[0].type === 'MultiplicativeExpression'){
+        let node = {
+            type:'AdditiveExpression',
             children:[source[0]]
         }
         source[0] = node
-        return AddictiveExpression(source)
-    }else if(source[0].type === 'AddictiveExpression' && source[1].value === '+'){
+        return AdditiveExpression(source)
+    }else if((source[0].type === 'AdditiveExpression' || source[0].type === 'PrimaryExpression') && source[1] && source[1].value === '+'){
         let node = {
-            type:'AddictiveExpression',
+            type:'AdditiveExpression',
             operator:'+',
             children:[source.shift(),source.shift()]
         }
         MultiplicativeExpression(source)
         node.children.push(source.shift())
         source.unshift(node)
-        return AddictiveExpression(source)
-    }else if(source[0].type === 'AddictiveExpression' && source[1].value === '-'){
+        return AdditiveExpression(source)
+    }else if((source[0].type === 'AdditiveExpression' || source[0].type === 'PrimaryExpression') && source[1] && source[1].value === '-'){
         let node = {
-            type:'AddictiveExpression',
+            type:'AdditiveExpression',
             operator:'-',
             children:[source.shift(),source.shift()]
         }
+       
         MultiplicativeExpression(source)
         node.children.push(source.shift())
         source.unshift(node)
-        return AddictiveExpression(source)
+        return AdditiveExpression(source)
     }
-    if(source[0].type === 'AddictiveExpression'){
+    if(source[0].type === 'AdditiveExpression'){
         return source[0]
     }
     MultiplicativeExpression(source)
-    return AddictiveExpression(source)
+    return AdditiveExpression(source)
 }
 
 function MultiplicativeExpression(source){
@@ -155,31 +198,44 @@ function MultiplicativeExpression(source){
 *                                 <MultiplicativeExpression> * <Decimal>
 *                                  <MultiplicativeExpression> / <Decimal>
 */ 
-//console.log('MultiplicativeExpression',source)
-    if(source[0].type === validTokenType[0]){
+    // console.log('MultiplicativeExpression',JSON.stringify(source))
+    // debugger
+    if(source[0].value === groupingOper[0]){//(
+        PrimaryExpression(source)
+        return MultiplicativeExpression(source) 
+    }
+    if(source[0].type === validTokenType[0]){//Decimal
         let node = {
             type:'MultiplicativeExpression',
             children:[source[0]]
         }
         source[0] = node
         return MultiplicativeExpression(source)
-    }else if(source[0].type === 'MultiplicativeExpression' && source[1].value === '*'){
+    }else if((source[0].type === 'MultiplicativeExpression' || source[0].type === 'PrimaryExpression') && source[1].value === '*'){
         let node = {
             type:'MultiplicativeExpression',
             operator:'*',
             children:[source.shift(),source.shift()]
         }
-        MultiplicativeExpression(source)
+        if(source[0].value === groupingOper[0]){
+            PrimaryExpression(source)
+        }else{
+            MultiplicativeExpression(source)
+        }
         node.children.push(source.shift())
         source.unshift(node)
         return MultiplicativeExpression(source)
-    }else if(source[0].type === 'MultiplicativeExpression' && source[1].value === '/'){
+    }else if((source[0].type === 'MultiplicativeExpression' || source[0].type === 'PrimaryExpression') && source[1].value === '/'){
         let node = {
             type:'MultiplicativeExpression',
             operator:'/',
             children:[source.shift(),source.shift()]
         }
-        MultiplicativeExpression(source)
+        if(source[0].value === groupingOper[0]){
+            PrimaryExpression(source)
+        }else{
+            MultiplicativeExpression(source)
+        }
         node.children.push(source.shift())
         source.unshift(node)
         return MultiplicativeExpression(source)
@@ -187,12 +243,21 @@ function MultiplicativeExpression(source){
     if(source[0].type === 'MultiplicativeExpression'){
         return source[0]
     }
+    if(source[0].type === 'PrimaryExpression'){
+        return source[0]
+    }
     return MultiplicativeExpression(source)
 }
 
 function Expression(source){
-    //<Expression>:: = <AddictiveExpression><EOF>
-    if(source[0].type === 'AddictiveExpression' && source[1] && source[1].type === eof){
+    if((source[0].type === 'AdditiveExpression') && source[1] && source[1].type === eof){
+        let node = {
+            type:'Expression',
+            children:[source.shift(),source.shift()]
+        }
+        source.unshift(node)
+        return node
+    }else   if((source[0].type === 'PrimaryExpression') && source[1] && source[1].type === eof){
         let node = {
             type:'Expression',
             children:[source.shift(),source.shift()]
@@ -200,18 +265,21 @@ function Expression(source){
         source.unshift(node)
         return node
     }
-    AddictiveExpression(source)
+    else if((source[0].value === groupingOper[0])){
+        PrimaryExpression(source)
+        return Expression(source)
+    }
+    AdditiveExpression(source)
     return Expression(source)
 }
 /**
  * 4. eval
  */
-
- function evaluate(node){
+function evaluate(node){
     if(node.type === 'Expression'){
         return evaluate(node.children[0])
     }
-    if(node.type === 'AddictiveExpression'){
+    if(node.type === 'AdditiveExpression'){
         if(node.operator === oper[0]){//+
             return evaluate(node.children[0]) + evaluate(node.children[2])
         }
@@ -228,6 +296,9 @@ function Expression(source){
             return evaluate(node.children[0]) / evaluate(node.children[2])
         }
         return evaluate(node.children[0])
+    }
+    if(node.type === 'PrimaryExpression'){
+        return (evaluate(node.children[1]))
     }
     if(node.type === validTokenType[0]){
         return Number(node.value)

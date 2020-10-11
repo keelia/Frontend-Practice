@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <style>
+            h1{
+                background-color: lightblue;
+                color: white;
+                text-align: center;
+            }
+            h2{
+                color: lightblue;
+            }
+            ul{
+                list-style-type: none;
+            }
+            li{
+                text-transform: capitalize;
+            }
+            p.expression{
+                font-style: italic;
+                color: blue;
+            }
+            p.expression-error{
+                color:red;
+            }
+            hr{
+                margin: 8px 0;
+                border-color: lightblue;
+            }
+            input#source{
+                height: 45px;
+                width: 200px;
+                padding:10px;
+                margin:10px 0;
+                color: lightblue;
+                border: 2px solid lightblue;
+                box-shadow:0 0 15px 4px rgba(0,0,0,0.06);
+                border-radius:10px;
+                outline: lightblue;
+            }
+            input#source:active{
+                border-color: lightblue;
+            }
+            button{
+                height: 45px;
+                width: 100px;
+                border-width: 0;
+                background-color: lightblue;
+                color: whitesmoke;
+                font-size: 16px;
+                border-radius: 2px;
+            }
+            button:hover{
+                cursor: pointer;
+                background-color: turquoise;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>Artithmetic Practice</h1>
+        <section>
+            <h2>Test Cases</h2>
+            <ul id="result">
+            </ul>
+        </section>
+        <hr/>
+        <section>
+            <h2>Playgroud</h2>
+            <section>
+                <input id="source" type="text" placeholder="1+2"/>
+                <button type="submit">Calculate</button>
+            </section>
+            <section>
+                <ul id="inputResult">
+                </ul>
+            </section>
+        </section>
+        <script type="module">
+           import {calculate} from './main.js'
+            document.getElementsByTagName('button')[0].addEventListener('click',e=>{
+                calculate(document.getElementById('source').value,document.getElementById('inputResult'))
+            })
+            document.addEventListener('keydown', e=>{
+                if(e.key === 'Enter'){
+                    calculate(document.getElementById('source').value,document.getElementById('inputResult'))
+                }
+            });
+            
+        </script>
+    </body>
+</html>
+
+
