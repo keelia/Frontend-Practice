@@ -11,6 +11,8 @@
                 border-style: solid;
                 border-width: 10px;
                 vertical-align: bottom;
+                background-color: white;
+                color: red;
             }
             .inner.inner-1{
                 width: 200px;
@@ -113,20 +115,10 @@
                 <div class="inner inner-5">5</div>
                 <div class="inner inner-6">6</div>
                 <div class="inner inner-7">7</div>
-                <!-- <div class="inner inner-8">8</div> -->
             </div>
         </section>
         <section id="iblayoutContainer">
             <h1>JS inline block implementation</h1>
-            <!-- <div class="outer">
-                <div class="inner">1</div>
-                <div class="inner">2</div>
-                <div class="inner">3</div>
-                <div class="inner">4</div>
-                <div class="inner">5</div>
-                <div class="inner">6</div>
-                <div class="inner">7</div>
-            </div> -->
         </section>
         <section id="actions">
             <form id="addForm">
@@ -148,6 +140,14 @@
                     <input type="text" id="elBorderColor" value="black">
                 </div>
                 <div class="field">
+                    <label for="elBackgroundColor">Background Color(eg. orange/#ffa500/rgba/rgb)</label>
+                    <input type="text" id="elBackgroundColor" value="white">
+                </div>
+                <div class="field">
+                    <label for="elColor">Text Color(eg. orange/#ffa500/rgba/rgb)</label>
+                    <input type="text" id="elColor" value="red">
+                </div>
+                <div class="field">
                     <label for="elTextContent">Text Content</label>
                     <input type="text" id="elTextContent" value="balabala...">
                 </div>
@@ -162,7 +162,7 @@
                         <option value="bottom">Bottom</option>
                     </select>
                 </div>
-                <button id="insert">Insert</button>
+                <button id="insert" type="button">Insert</button>
             </form>
             <form id="removeForm">
                 <h1>Remove inline-block Element</h1>
@@ -170,7 +170,7 @@
                     <label for="removeOrder">Order</label>
                     <input type="number" id="removeOrder" value="6">
                 </div>
-                <button id="remove">Remove</button>
+                <button id="remove" type="button">Remove</button>
             </form>
         </section>
         <script src="./inline-block-layout.js"></script>

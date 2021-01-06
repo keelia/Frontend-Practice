@@ -6,14 +6,16 @@ const ibEls = [
         borderWidth:4,
         borderColor:'lightcoral',
         verticalAlign: 'top',
-        textContent:'1'
+        textContent:'1',
+        color:'red',
     },
     {
         width:'200px',
         height:'100px',
         borderWidth:10,
         borderColor:'lightgray',
-        textContent:'2'
+        textContent:'2',
+        color:'red'
     },
     {
         width:'250px',
@@ -21,28 +23,32 @@ const ibEls = [
         borderWidth:20,
         borderColor:'blue',
         verticalAlign: 'top',
-        textContent:'3'
+        textContent:'3',
+        color:'red'
     },
     {
         width:'30px',
         height:'220px',
         borderWidth:10,
         borderColor:'pink',
-        textContent:'4'
+        textContent:'4',
+        color:'red'
     },
     {
         width:'250px',
         height:'250px',
         borderWidth:10,
         borderColor:'green',
-        textContent:'5'
+        textContent:'5',
+        color:'red'
     },
     {
         width:'220px',
         height:'220px',
         borderWidth:2,
         borderColor:'orange',
-        textContent:'6'
+        textContent:'6',
+        color:'red'
     },
     {
         width:'400px',
@@ -50,7 +56,8 @@ const ibEls = [
         borderWidth:5,
         borderColor:'red',
         verticalAlign: 'top',
-        textContent:'7'
+        textContent:'7',
+        color:'red'
     }
 ]
 
@@ -105,7 +112,6 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
         const canFilled = (rowBoxes[currentRowBoxIndex].end.x + el.size.width) <= totolWidth;
         if(canFilled){
             //feed into rowBox
-            rowBoxes[currentRowBoxIndex].rowEls.push(el)
             feedElIntoRowbox(el,rowBoxes[currentRowBoxIndex])
         }else{
             //create rowbox
@@ -122,12 +128,12 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
                 rowEls:[],
             })
             currentRowBoxIndex+=1
-            rowBoxes[currentRowBoxIndex].rowEls.push(el)
             feedElIntoRowbox(el,rowBoxes[currentRowBoxIndex])
         }
     }
 
     function feedElIntoRowbox(el,rowBox){
+        rowBox.rowEls.push(el)
         const verticalAlign = el.verticalAlign || 'bottom';
         const {width:elWidth,height:elHeight} = el.size
         const startX = rowBox.end.x
@@ -184,9 +190,14 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
         for (const el of rowBox.rowEls) {
             const {x,y,width,height} = el.position()
             ctx.lineWidth = el.borderWidth;
-            ctx.strokeStyle = el.borderColor;
             ctx.font = '30px "Fira Sans", sans-serif';
+     
+            ctx.fillStyle = el.backgroundColor || 'white';
+            ctx.fillRect(x, y, width, height);
+            ctx.fillStyle = el.color || 'red';
             ctx.fillText(el.textContent, x+el.borderWidth, y+el.borderWidth+30);
+
+            ctx.strokeStyle = el.borderColor;
             ctx.strokeRect(x, y, width, height);
         }
     }
@@ -227,7 +238,9 @@ insertBtn.addEventListener('click',e=>{
         borderWidth: isNaN(parseInt(inputs.elBorderWidth.value)) || !isFinite(parseInt(inputs.elBorderWidth.value)) ? 1: parseInt(inputs.elBorderWidth.value),
         borderColor:`${inputs.elBorderColor.value}`,
         textContent:`${inputs.elTextContent.value}`,
-        verticalAlign:selects.verticalAlign.value
+        verticalAlign:selects.verticalAlign.value,
+        color:inputs.elColor.value,
+        backgroundColor:inputs.elBackgroundColor.value
     }
     //1. Add to compare HTML
     const ibCSSEl = document.createElement('div')
@@ -237,6 +250,8 @@ insertBtn.addEventListener('click',e=>{
     ibCSSEl.style.width = formData.width
     ibCSSEl.style.height = formData.height
     ibCSSEl.style.verticalAlign = formData.verticalAlign
+    ibCSSEl.style.color = formData.color
+    ibCSSEl.style.backgroundColor = formData.backgroundColor
     ibCSSEl.classList.add(`inner`)
     ibCSSEl.classList.add(`inner-${rawCSSIbContainer.children.length+1}`)
     const refNode = rawCSSIbContainer.children[inputs.addOrder.value-1]
@@ -248,7 +263,9 @@ insertBtn.addEventListener('click',e=>{
         borderWidth:formData.borderWidth,
         borderColor:formData.borderColor,
         textContent:formData.textContent,
-        verticalAlign:formData.verticalAlign
+        verticalAlign:formData.verticalAlign,
+        color:formData.color,
+        backgroundColor:formData.backgroundColor
     },inputs.addOrder.value-1)
 })
 const removeBtn = document.getElementById('remove')
