@@ -152,23 +152,9 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
             el.position = position
             el.rowBox = rowBox
         }else if(verticalAlign === 'top'){
-            const startY = rowBox.end.y+el.borderWidth
             const position = ()=>{
                 return {x:el.rowBox.start.x + startX+ el.borderWidth/2, 
                         y:rowBox.start.y+ el.borderWidth/2, 
-                        width:elWidth-el.borderWidth,
-                        height:elHeight - el.borderWidth
-                    }
-            }
-            rowBox.height = Math.max(rowBox.height,elHeight)
-            rowBox.end.x += elWidth
-            el.position = position
-            el.rowBox = rowBox
-        }else if(verticalAlign === 'middle'){
-            const position = ()=>{
-                const rowBoxheight = el.rowBox.height
-                return {x:el.rowBox.start.x + startX+ el.borderWidth/2, 
-                        y:rowBox.start.y+ (rowBoxheight/2 - elHeight/2) + el.borderWidth/2, 
                         width:elWidth-el.borderWidth,
                         height:elHeight - el.borderWidth
                     }
@@ -194,6 +180,7 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
      
             ctx.fillStyle = el.backgroundColor || 'white';
             ctx.fillRect(x, y, width, height);
+
             ctx.fillStyle = el.color || 'red';
             ctx.fillText(el.textContent, x+el.borderWidth, y+el.borderWidth+30);
 
