@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CSS</title>
+  <style>
+    .inner {
+    width:33.33%;
+    height:300px;
+    /* float: left; */
+    display:inline-block;
+    outline:solid 1px blue;
+    font-size: 300px;
+    }
+    .outer { 
+    width: 101px;
+    font-size: 0;
+    /*font-size-0 fixes line-break in between of inner-div */
+    }
+.inner:last-child { margin-right:-5px;}
+/* adjusted with old broswer's wrap */
+  </style>
+</head>
+<!--float can do same way as inline-block, but it can only be aligned with top, not as flexiable as inline-block-->
+<div class="outer">
+  <div class="inner"></div>
+  <div class="inner"></div>
+  <div class="inner"></div>
+</div>
+</body>
+</html>
