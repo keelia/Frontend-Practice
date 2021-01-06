@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .outer{
+                font-size: 0;
+            }
+            .inner{
+                font-size: 30px;
+                display: inline-block;
+                border-style: solid;
+                border-width: 10px;
+                vertical-align: bottom;
+            }
+            .inner.inner-1{
+                width: 200px;
+                height: 200px;
+                border-color: lightcoral;
+                border-width: 4px;
+                vertical-align: top;
+            }
+            .inner.inner-2{
+                width: 200px;
+                height: 100px;
+                border-color: lightgray;
+            }
+            .inner.inner-3{
+                width: 250px;
+                height: 150px;
+                border-color: blue;
+                border-width: 20px;
+                vertical-align: top;
+            }
+            .inner.inner-4{
+                width: 30px;
+                height: 220px;
+                border-color: pink;
+            }
+            .inner.inner-5{
+                width: 250px;
+                height: 250px;
+                border-color: green;
+            }
+            .inner.inner-6{
+                width: 220px;
+                height: 220px;
+                border-color: orange;
+                border-width: 2px;
+            }
+            .inner.inner-7{
+                width: 400px;
+                height: 150px;
+                border-color: red;
+                border-width: 5px;
+                vertical-align: top;
+            }
+            .inner.inner-8{
+                width: 330px;
+                height: 330px;
+                border-width: 5px;
+                border-color: black;
+            }
+            form{
+                border: 1px solid lightgray;
+                border-radius: 5px;
+                padding:10px;
+                width: 600px;
+                font-size: 15px;
+            }
+            form div.field{
+               display: flex;
+               flex-direction: row;
+               width: 550px;
+               padding: 10px;
+            }
+            form div.field label{
+               flex-basis: 200px;
+            }
+            form div.field input,form div.field select{
+               flex-basis: 350px;
+            }
+            
+            button{
+                margin-top: 10px;
+                float: right;
+                height: 45px;
+                width: 145px;
+                font-size: 20px;
+                border-width: 0;
+                background-color: rgb(241, 239, 239);
+                color: lightskyblue;
+                cursor: pointer;
+            }
+            button:hover{
+                color:rgb(128, 207, 238);
+                background-color: rgb(229, 226, 226);
+            }
+
+            section#actions{
+                display: flex;
+                justify-content: space-around;
+            }
+        </style>
+    </head>
+    <body>
+        <section>
+            <h1>CSS inline block implementation</h1>
+            <div class="outer" id="cssIbContainer">
+                <div class="inner inner-1">1</div>
+                <div class="inner inner-2">2</div>
+                <div class="inner inner-3">3</div>
+                <div class="inner inner-4">4</div>
+                <div class="inner inner-5">5</div>
+                <div class="inner inner-6">6</div>
+                <div class="inner inner-7">7</div>
+                <!-- <div class="inner inner-8">8</div> -->
+            </div>
+        </section>
+        <section id="iblayoutContainer">
+            <h1>JS inline block implementation</h1>
+            <!-- <div class="outer">
+                <div class="inner">1</div>
+                <div class="inner">2</div>
+                <div class="inner">3</div>
+                <div class="inner">4</div>
+                <div class="inner">5</div>
+                <div class="inner">6</div>
+                <div class="inner">7</div>
+            </div> -->
+        </section>
+        <section id="actions">
+            <form id="addForm">
+                <h1>Add inline-block Element</h1>
+                <div class="field">
+                    <label for="elWidth">Width(px)</label>
+                    <input type="number" id="elWidth" value="200">
+                  </div>
+                <div class="field">
+                    <label for="elHeight">Height(px)</label>
+                    <input type="number" id="elHeight" value="200">
+                </div>
+                <div class="field">
+                    <label for="elBorderWidth">Border Width(px)</label>
+                    <input type="number" id="elBorderWidth" value="3">
+                </div>
+                <div class="field">
+                    <label for="elBorderColor">Border Color(eg. orange/#ffa500/rgba/rgb)</label>
+                    <input type="text" id="elBorderColor" value="black">
+                </div>
+                <div class="field">
+                    <label for="elTextContent">Text Content</label>
+                    <input type="text" id="elTextContent" value="balabala...">
+                </div>
+                <div class="field">
+                    <label for="addOrder">Order</label>
+                    <input type="number" id="addOrder" value="8">
+                </div>
+                <div class="field">
+                    <label for="verticalAlign">Vertical Align</label>
+                    <select id="verticalAlign">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
+                <button id="insert">Insert</button>
+            </form>
+            <form id="removeForm">
+                <h1>Remove inline-block Element</h1>
+                <div class="field">
+                    <label for="removeOrder">Order</label>
+                    <input type="number" id="removeOrder" value="6">
+                </div>
+                <button id="remove">Remove</button>
+            </form>
+        </section>
+        <script src="./inline-block-layout.js"></script>
+    </body>
+</html>
