@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CSS</title>
+  <style>
+    .outer{
+      font-size: 0;
+    }
+   .fixed {
+      width:200px;
+      display:inline-block; 
+      vertical-align:top;
+      background-color: lightblue;
+      transform: translateZ(0);
+    }
+    .fixed, .auto {
+      height:300px;
+      outline:solid 1px blue;
+      font-size: 30px;
+    }
+    .auto{
+      margin-left:-200px;
+      padding-left: 200px;
+      width:100%; 
+      display:inline-block; 
+      vertical-align:top;
+      box-sizing: border-box;
+      background-color: lightcoral;
+    }
+  </style>
+</head>
+<!--Although text content shows correctly, if set background-color, auto will cover the fixed, how to fixed: add transform: translateZ(0); to fixed-->
+<div class="outer">
+  <div class="fixed">Fixed content</div>
+  <div class="auto">Auto content</div>
+</div>
+
+</body>
+</html>
