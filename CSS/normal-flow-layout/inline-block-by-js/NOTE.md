@@ -13,7 +13,7 @@ CSS Rules:
    - Height(px)
    - Text content
    - Vertical align(Top/Bottom only)
-   - Margin(To be supported)
+   - Margin
    - Padding(To be supported)
   
 

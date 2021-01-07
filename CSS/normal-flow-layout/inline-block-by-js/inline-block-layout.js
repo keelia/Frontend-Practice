@@ -8,6 +8,7 @@ const ibEls = [
         verticalAlign: 'top',
         textContent:'1',
         color:'red',
+        margin:'45px 55px'
     },
     {
         width:'200px',
@@ -15,7 +16,8 @@ const ibEls = [
         borderWidth:10,
         borderColor:'lightgray',
         textContent:'2',
-        color:'red'
+        color:'red',
+        margin:'13px 45px 40px 13px'
     },
     {
         width:'250px',
@@ -24,7 +26,8 @@ const ibEls = [
         borderColor:'blue',
         verticalAlign: 'top',
         textContent:'3',
-        color:'red'
+        color:'red',
+        margin:'20px 33px 22px'
     },
     {
         width:'30px',
@@ -32,7 +35,8 @@ const ibEls = [
         borderWidth:10,
         borderColor:'pink',
         textContent:'4',
-        color:'red'
+        color:'red',
+        margin:'33px'
     },
     {
         width:'250px',
@@ -48,7 +52,8 @@ const ibEls = [
         borderWidth:2,
         borderColor:'orange',
         textContent:'6',
-        color:'red'
+        color:'red',
+        margin:'33px'
     },
     {
         width:'400px',
@@ -57,7 +62,8 @@ const ibEls = [
         borderColor:'red',
         verticalAlign: 'top',
         textContent:'7',
-        color:'red'
+        color:'red',
+        margin:'44px'
     }
 ]
 
@@ -90,26 +96,75 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
                 end:{ x:0, y:0 },
                 height:0,
                 rowEls:[],
+                maxMarginRemain:{
+                    top:0,
+                    bottom:0,
+                    left:null,
+                    right:0
+                }
             }], currentRowBoxIndex = 0;
         for (const el of ibLayoutEls) {
-            el.size = {
-                width:parseInt(el.width) + (2 * el.borderWidth),
-                height:parseInt(el.height) + (2 * el.borderWidth)
-            }
+            processEl(el)
             rowboxLayout(ibLayout.width,el)
         }
         adjustLayoutSize()
         rowBoxesRender(rowBoxes)
     }
 
+    function processEl(el){
+        el.size = {
+            width:parseInt(el.width) + (2 * el.borderWidth),
+            height:parseInt(el.height) + (2 * el.borderWidth),
+            margin:{
+                top:0,
+                bottom:0,
+                left:0,
+                right:0
+            }
+        }
+        el.verticalAlign = el.verticalAlign || 'bottom'
+        if(el.margin){
+            const mgArr = el.margin.split(/\s+/)
+            const l = mgArr.length
+            if(l ===1){
+                el.size.margin = {
+                    top:parseInt(mgArr[0]),
+                    bottom:parseInt(mgArr[0]),
+                    left:parseInt(mgArr[0]),
+                    right:parseInt(mgArr[0])
+                }
+            }else if(l ===2){
+                el.size.margin = {
+                    top:parseInt(mgArr[0]),
+                    bottom:parseInt(mgArr[0]),
+                    left:parseInt(mgArr[1]),
+                    right:parseInt(mgArr[1])
+                }
+            }else if(l ===3){
+                el.size.margin = {
+                    top:parseInt(mgArr[0]),
+                    bottom:parseInt(mgArr[2]),
+                    left:parseInt(mgArr[1]),
+                    right:parseInt(mgArr[1])
+                }
+            }else if(l ===4){
+                el.size.margin = {
+                    top:parseInt(mgArr[0]),
+                    bottom:parseInt(mgArr[2]),
+                    left:parseInt(mgArr[3]),
+                    right:parseInt(mgArr[1])
+                }
+            }
+        }
+    }
+
     function adjustLayoutSize(){
         const remain = Math.max(...ibEls.map(el=>el.borderWidth)) *2;
         const rowBoxesHeight = rowBoxes.map(rb=>rb.height).reduce((a,c)=>a+c,0);
         ibLayout.height = rowBoxesHeight + remain
-        //ibLayout.height = Math.max(ibLayout.height,rowBoxes.map(rb=>rb.height).reduce((a,c)=>a+c,0))+  (Math.max(...ibEls.map(el=>el.borderWidth)) *2)
     }
     function rowboxLayout(totolWidth,el){
-        const canFilled = (rowBoxes[currentRowBoxIndex].end.x + el.size.width) <= totolWidth;
+        const canFilled = ((rowBoxes[currentRowBoxIndex].end.x ) + (el.size.margin.left + el.size.width + el.size.margin.right)) <= totolWidth;
         if(canFilled){
             //feed into rowBox
             feedElIntoRowbox(el,rowBoxes[currentRowBoxIndex])
@@ -134,33 +189,33 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
 
     function feedElIntoRowbox(el,rowBox){
         rowBox.rowEls.push(el)
-        const verticalAlign = el.verticalAlign || 'bottom';
         const {width:elWidth,height:elHeight} = el.size
         const startX = rowBox.end.x
-        if(verticalAlign === 'bottom'){
+        if(el.verticalAlign === 'bottom'){
             const position = ()=>{
                 const rowBoxheight = el.rowBox.height
                 return {
-                    x:el.rowBox.start.x + startX+ el.borderWidth/2,
-                    y:rowBox.start.y + rowBoxheight - elHeight + el.borderWidth/2,
+                    x:el.rowBox.start.x + startX+el.size.margin.left+ el.borderWidth/2,//+ el.borderWidth/2 to fix canvas strock half hide on edge
+                    y:rowBox.start.y + rowBoxheight -el.size.margin.bottom - elHeight + el.borderWidth/2,
                     width:elWidth-el.borderWidth,
                     height:elHeight - el.borderWidth
                 }
             }
-            rowBox.height = Math.max(rowBox.height,elHeight)
-            rowBox.end.x += elWidth
+            rowBox.height = Math.max(rowBox.height,el.size.margin.top+elHeight+el.size.margin.bottom)
+            rowBox.end.x += (el.size.margin.left+elWidth+el.size.margin.right)
             el.position = position
             el.rowBox = rowBox
-        }else if(verticalAlign === 'top'){
+        }else if(el.verticalAlign === 'top'){
             const position = ()=>{
-                return {x:el.rowBox.start.x + startX+ el.borderWidth/2, 
-                        y:rowBox.start.y+ el.borderWidth/2, 
+                return {
+                        x:el.rowBox.start.x + startX +el.size.margin.left + el.borderWidth/2, 
+                        y:rowBox.start.y+el.size.margin.top+ el.borderWidth/2, 
                         width:elWidth-el.borderWidth,
                         height:elHeight - el.borderWidth
                     }
             }
-            rowBox.height = Math.max(rowBox.height,elHeight)
-            rowBox.end.x += elWidth
+            rowBox.height = Math.max(rowBox.height,el.size.margin.top+elHeight+el.size.margin.bottom)
+            rowBox.end.x += (el.size.margin.left+elWidth+el.size.margin.right)
             el.position = position
             el.rowBox = rowBox
         }
