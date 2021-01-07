@@ -231,13 +231,13 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
         for (const el of rowBox.rowEls) {
             const {x,y,width,height} = el.position()
             ctx.lineWidth = el.borderWidth;
-            ctx.font = '30px "Fira Sans", sans-serif';
+            ctx.font = '30px sans-serif';
      
             ctx.fillStyle = el.backgroundColor || 'white';
             ctx.fillRect(x, y, width, height);
 
             ctx.fillStyle = el.color || 'red';
-            ctx.fillText(el.textContent, x+el.borderWidth, y+el.borderWidth+30);
+            ctx.fillText(el.textContent, x+el.borderWidth/2, y+el.borderWidth/2+30);
 
             ctx.strokeStyle = el.borderColor;
             ctx.strokeRect(x, y, width, height);
@@ -273,7 +273,7 @@ insertBtn.addEventListener('click',e=>{
     const form = document.getElementById('addForm')
     const inputs = form.getElementsByTagName('input')
     const selects = form.getElementsByTagName('select')
-    //get form data:'elWidth','elHeight','elBorderWidth','elBorderColor','elTextContent','addOrder'
+    //get form data:'elWidth','elHeight','elBorderWidth','elBorderColor','elTextContent','addOrder',elMargin
     const formData = {
         width:`${inputs.elWidth.value}px`,
         height:`${inputs.elHeight.value}px`,
@@ -282,7 +282,8 @@ insertBtn.addEventListener('click',e=>{
         textContent:`${inputs.elTextContent.value}`,
         verticalAlign:selects.verticalAlign.value,
         color:inputs.elColor.value,
-        backgroundColor:inputs.elBackgroundColor.value
+        backgroundColor:inputs.elBackgroundColor.value,
+        margin:inputs.elMargin.value
     }
     //1. Add to compare HTML
     const ibCSSEl = document.createElement('div')
@@ -294,6 +295,7 @@ insertBtn.addEventListener('click',e=>{
     ibCSSEl.style.verticalAlign = formData.verticalAlign
     ibCSSEl.style.color = formData.color
     ibCSSEl.style.backgroundColor = formData.backgroundColor
+    ibCSSEl.style.margin = formData.margin
     ibCSSEl.classList.add(`inner`)
     ibCSSEl.classList.add(`inner-${rawCSSIbContainer.children.length+1}`)
     const refNode = rawCSSIbContainer.children[inputs.addOrder.value-1]
@@ -307,7 +309,8 @@ insertBtn.addEventListener('click',e=>{
         textContent:formData.textContent,
         verticalAlign:formData.verticalAlign,
         color:formData.color,
-        backgroundColor:formData.backgroundColor
+        backgroundColor:formData.backgroundColor,
+        margin:formData.margin
     },inputs.addOrder.value-1)
 })
 const removeBtn = document.getElementById('remove')
