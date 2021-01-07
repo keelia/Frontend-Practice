@@ -22,6 +22,7 @@
                 border-width: 4px;
                 vertical-align: top;
                 margin: 45px 55px;
+                padding:45px;
             }
             .inner.inner-2{
                 width: 200px;
@@ -42,11 +43,13 @@
                 height: 220px;
                 border-color: pink;
                 margin: 33px;
+                padding: 66px;
             }
             .inner.inner-5{
                 width: 250px;
                 height: 250px;
                 border-color: green;
+                padding: 22px 33px;
             }
             .inner.inner-6{
                 width: 220px;
@@ -54,6 +57,7 @@
                 border-color: orange;
                 border-width: 2px;
                 margin: 33px;
+                padding: 55px;
             }
             .inner.inner-7{
                 width: 400px;
@@ -126,19 +130,23 @@
                 <h1>Add inline-block Element</h1>
                 <div class="field">
                     <label for="elWidth">Width(px)</label>
-                    <input type="number" id="elWidth" value="200">
+                    <input type="number" id="elWidth" value="200" min="0">
                   </div>
                 <div class="field">
                     <label for="elHeight">Height(px)</label>
-                    <input type="number" id="elHeight" value="200">
+                    <input type="number" id="elHeight" value="200" min="0">
                 </div>
                 <div class="field">
                     <label for="elMargin">Margin(px)</label>
-                    <input type="text" id="elMargin" value="33px">
+                    <input type="text" id="elMargin" value="33px" min="0">
+                </div>
+                <div class="field">
+                    <label for="elPadding">Padding(px)</label>
+                    <input type="text" id="elPadding" value="22px" min="0">
                 </div>
                 <div class="field">
                     <label for="elBorderWidth">Border Width(px)</label>
-                    <input type="number" id="elBorderWidth" value="3">
+                    <input type="number" id="elBorderWidth" value="3" min="0">
                 </div>
                 <div class="field">
                     <label for="elBorderColor">Border Color(eg. orange/#ffa500/rgba/rgb)</label>
@@ -158,13 +166,13 @@
                 </div>
                 <div class="field">
                     <label for="addOrder">Order</label>
-                    <input type="number" id="addOrder" value="8">
+                    <input type="number" id="addOrder" value="8" min="0">
                 </div>
                 <div class="field">
                     <label for="verticalAlign">Vertical Align</label>
                     <select id="verticalAlign">
                         <option value="top">Top</option>
-                        <option value="bottom">Bottom</option>
+                        <option value="bottom" selected>Bottom</option>
                     </select>
                 </div>
                 <button id="insert" type="button">Insert</button>

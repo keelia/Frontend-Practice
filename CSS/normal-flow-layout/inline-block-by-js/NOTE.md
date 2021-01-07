@@ -6,15 +6,16 @@
 
 ## Inline-block Element
 CSS Rules:
-   - Border width(default 1px)/Color
-   - Color
-   - Background color
+   - Border width(px)|default 1px | min 0px
+   - Border Color | format:orange/#ffa500/rgba/rgb
+   - Color | format:orange/#ffa500/rgba/rgb
+   - Background color | format:orange/#ffa500/rgba/rgb
    - Width(px)
    - Height(px)
    - Text content
-   - Vertical align(Top/Bottom only)
-   - Margin
-   - Padding(To be supported)
+   - Vertical align(Top/Bottom only) | default bottom
+   - Margin(px) | format: 12px/12px 12px/12px 12px 12px 12px) | default 0px | min 0px
+   - Padding(px) | format: 12px/12px 12px/12px 12px 12px 12px) | default 0px | min 0px
   
 
 ## To Achieve

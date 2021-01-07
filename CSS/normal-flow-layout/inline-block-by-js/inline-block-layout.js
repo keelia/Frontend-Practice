@@ -1,5 +1,5 @@
 //用 JavaScript 写一个仅包含 inline-block 的正常流布局算法
-const ibEls = [
+const inlineblockEls = [
     {
         width:'200px',
         height:'200px',
@@ -8,7 +8,8 @@ const ibEls = [
         verticalAlign: 'top',
         textContent:'1',
         color:'red',
-        margin:'45px 55px'
+        margin:'45px 55px',
+        padding:'45px'
     },
     {
         width:'200px',
@@ -36,7 +37,8 @@ const ibEls = [
         borderColor:'pink',
         textContent:'4',
         color:'red',
-        margin:'33px'
+        margin:'33px',
+        padding:'66px'
     },
     {
         width:'250px',
@@ -44,7 +46,8 @@ const ibEls = [
         borderWidth:10,
         borderColor:'green',
         textContent:'5',
-        color:'red'
+        color:'red',
+        padding:'22px 33px'
     },
     {
         width:'220px',
@@ -53,7 +56,8 @@ const ibEls = [
         borderColor:'orange',
         textContent:'6',
         color:'red',
-        margin:'33px'
+        margin:'33px',
+        padding:'55px'
     },
     {
         width:'400px',
@@ -63,34 +67,41 @@ const ibEls = [
         verticalAlign: 'top',
         textContent:'7',
         color:'red',
-        margin:'44px'
+        margin:'44px',
     }
 ]
+const rawCSSIbContainer = document.getElementById('cssIbContainer')//For comparing to inlineblockLayout which implements inline-block elements and their CSS rules by JS
 
-function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
-    const {height, width} =outerContainer.getBoundingClientRect()
+function InlineBlockLayout(parent,ibEls,compareCSSIbLayoutContainer){
+
     //Function-'Global' vars
-    let rowBoxes = [],currentRowBoxIndex = 0;
-    let ibLayout = initIbLayout("ibLayout",width,height,ibLayoutContainer),ctx = ibLayout.getContext('2d')
-    function initIbLayout(id, width,height,parent){
-        const ibContainer = document.createElement('canvas')
-        ibContainer.width = width
-        ibContainer.height = height
-        ibContainer.id=id
-        parent.appendChild(ibContainer)
-        return ibContainer
-    }
-    //add eventlistener
-    window.addEventListener('resize',e=>{
-        const {height, width} = outerContainer.getBoundingClientRect()
-        ibLayout.width = width
-        ibLayout.height = height
-        layout(ibLayout,ibEls)
-    })
-    
-    layout(ibLayout,ibEls)
+    let rowBoxes = [],_currentRowBoxIndex = 0;
+    let ibLayout = initIbLayout("ibLayout"),ibLayoutCtx = ibLayout.getContext('2d');
+    let ibLayoutEls = ibEls
 
-    function layout(ibLayout,ibLayoutEls){
+    layoutRender()
+
+    //Responsive
+    window.addEventListener('resize',e=>{
+        resizeIbLayout(ibLayout)
+        layoutRender()
+    })
+
+    function initIbLayout(id){
+        const iblayout = resizeIbLayout(document.createElement('canvas'))
+        iblayout.id=id
+        parent.appendChild(iblayout)
+        return iblayout
+    }
+
+    function resizeIbLayout(iblayout){
+        const {height, width} = (compareCSSIbLayoutContainer ||document.body ).getBoundingClientRect()
+        iblayout.width = width
+        iblayout.height = height
+        return iblayout
+    }
+
+    function layoutRender(){
         rowBoxes = [{
                 start:{ x:0, y:0 },
                 end:{ x:0, y:0 },
@@ -102,20 +113,27 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
                     left:null,
                     right:0
                 }
-            }], currentRowBoxIndex = 0;
+            }], _currentRowBoxIndex = 0;
         for (const el of ibLayoutEls) {
-            processEl(el)
-            rowboxLayout(ibLayout.width,el)
+            rowboxesLayout(processedEl(el))
         }
-        adjustLayoutSize()
-        rowBoxesRender(rowBoxes)
+        //adjust layout height after rowboxes height calculated
+        ibLayout.height = (rowBoxes.map(rb=>rb.height).reduce((a,c)=>a+c,0)) + (Math.max(...ibLayoutEls.map(el=>el.borderWidth)) *2)
+
+        rowBoxesRender()
     }
 
-    function processEl(el){
+    function processedEl(el){
         el.size = {
             width:parseInt(el.width) + (2 * el.borderWidth),
             height:parseInt(el.height) + (2 * el.borderWidth),
             margin:{
+                top:0,
+                bottom:0,
+                left:0,
+                right:0
+            },
+            padding:{
                 top:0,
                 bottom:0,
                 left:0,
@@ -156,20 +174,50 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
                 }
             }
         }
+        if(el.padding){
+            const pdArr = el.padding.split(/\s+/)
+            const l = pdArr.length
+            if(l ===1){
+                el.size.padding = {
+                    top:parseInt(pdArr[0]),
+                    bottom:parseInt(pdArr[0]),
+                    left:parseInt(pdArr[0]),
+                    right:parseInt(pdArr[0])
+                }
+            }else if(l ===2){
+                el.size.padding = {
+                    top:parseInt(pdArr[0]),
+                    bottom:parseInt(pdArr[0]),
+                    left:parseInt(pdArr[1]),
+                    right:parseInt(pdArr[1])
+                }
+            }else if(l ===3){
+                el.size.padding = {
+                    top:parseInt(pdArr[0]),
+                    bottom:parseInt(pdArr[2]),
+                    left:parseInt(pdArr[1]),
+                    right:parseInt(pdArr[1])
+                }
+            }else if(l ===4){
+                el.size.padding = {
+                    top:parseInt(pdArr[0]),
+                    bottom:parseInt(pdArr[2]),
+                    left:parseInt(pdArr[3]),
+                    right:parseInt(pdArr[1])
+                }
+            }
+            el.size.width += (el.size.padding.left + el.size.padding.right)
+            el.size.height += (el.size.padding.top + el.size.padding.bottom)
+        }
+
+        return el
     }
 
-    function adjustLayoutSize(){
-        const remain = Math.max(...ibEls.map(el=>el.borderWidth)) *2;
-        const rowBoxesHeight = rowBoxes.map(rb=>rb.height).reduce((a,c)=>a+c,0);
-        ibLayout.height = rowBoxesHeight + remain
-    }
-    function rowboxLayout(totolWidth,el){
-        const canFilled = ((rowBoxes[currentRowBoxIndex].end.x ) + (el.size.margin.left + el.size.width + el.size.margin.right)) <= totolWidth;
-        if(canFilled){
-            //feed into rowBox
-            feedElIntoRowbox(el,rowBoxes[currentRowBoxIndex])
+    function rowboxesLayout(el){
+        const canFeedIntoCurrentRowbox = ((rowBoxes[_currentRowBoxIndex].end.x ) + (el.size.margin.left + el.size.width + el.size.margin.right)) <= ibLayout.width;
+        if(canFeedIntoCurrentRowbox){
+            feedElIntoRowbox(el,rowBoxes[_currentRowBoxIndex])
         }else{
-            //create rowbox
             rowBoxes.push({
                 start:{
                     x:0,
@@ -182,8 +230,8 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
                 height:0,
                 rowEls:[],
             })
-            currentRowBoxIndex+=1
-            feedElIntoRowbox(el,rowBoxes[currentRowBoxIndex])
+            _currentRowBoxIndex+=1
+            feedElIntoRowbox(el,rowBoxes[_currentRowBoxIndex])
         }
     }
 
@@ -221,59 +269,57 @@ function inlineBlockLayout(ibLayoutContainer,ibEls,outerContainer){
         }
     }
 
-    function rowBoxesRender(rowBoxes){
+    function rowBoxesRender(){
         for (const rowBox of rowBoxes) {
-            rowBoxRender(rowBox)
-        }
-    }
-
-    function rowBoxRender(rowBox){
-        for (const el of rowBox.rowEls) {
-            const {x,y,width,height} = el.position()
-            ctx.lineWidth = el.borderWidth;
-            ctx.font = '30px sans-serif';
-     
-            ctx.fillStyle = el.backgroundColor || 'white';
-            ctx.fillRect(x, y, width, height);
-
-            ctx.fillStyle = el.color || 'red';
-            ctx.fillText(el.textContent, x+el.borderWidth/2, y+el.borderWidth/2+30);
-
-            ctx.strokeStyle = el.borderColor;
-            ctx.strokeRect(x, y, width, height);
+            for (const el of rowBox.rowEls) {
+                const {x,y,width,height} = el.position()
+                //Border
+                ibLayoutCtx.lineWidth = el.borderWidth;
+                
+                //Background Color
+                ibLayoutCtx.fillStyle = el.backgroundColor || 'white';
+                ibLayoutCtx.fillRect(x, y, width, height);
+    
+                //Text content with padding
+                ibLayoutCtx.font = '30px sans-serif';
+                ibLayoutCtx.fillStyle = el.color || 'red';
+                //ibLayoutCtx.fillText(el.textContent, x+el.borderWidth/2, y+el.borderWidth/2+30);
+                ibLayoutCtx.fillText(el.textContent, x+el.borderWidth/2+el.size.padding.left, y+el.borderWidth/2+30+el.size.padding.top);
+    
+                //Border Color
+                ibLayoutCtx.strokeStyle = el.borderColor;
+                ibLayoutCtx.strokeRect(x, y, width, height);
+            }
         }
     }
 
     //Public functions
     function insertInlineblockEl(ibEl,index){
-        ibEls.splice(index,0,ibEl)
-        layout(ibLayout,ibEls)
+        ibLayoutEls.splice(index,0,ibEl)
+        layoutRender()
     }
     function removeInlineblockEl(index){
-        if(index >= 0){
-            ibEls.splice(index,1)
-            layout(ibLayout,ibEls)
-        }
+        ibLayoutEls.splice(index,1)
+        layoutRender()
     }
 
     return {
         ibLayout,
         rowBoxes,
-        ibEls,
+        ibEls:ibLayoutEls,
         removeInlineblockEl,
         insertInlineblockEl
     }
 }
-const rawCSSIbContainer = document.getElementById('cssIbContainer')
-const ibLayout = inlineBlockLayout(document.getElementById('iblayoutContainer'),ibEls,rawCSSIbContainer);
-console.log(ibLayout)
+const inlineblockLayoutObj = InlineBlockLayout(document.getElementById('iblayoutContainer'),inlineblockEls);
+console.log(inlineblockLayoutObj)
 
-const insertBtn = document.getElementById('insert')
-insertBtn.addEventListener('click',e=>{
+//Support insert/remove inline-block elements
+document.getElementById('insert').addEventListener('click',e=>{
     const form = document.getElementById('addForm')
     const inputs = form.getElementsByTagName('input')
     const selects = form.getElementsByTagName('select')
-    //get form data:'elWidth','elHeight','elBorderWidth','elBorderColor','elTextContent','addOrder',elMargin
+    //get form data:'elWidth','elHeight','elBorderWidth','elBorderColor','elTextContent','addOrder',elMargin,elPadding
     const formData = {
         width:`${inputs.elWidth.value}px`,
         height:`${inputs.elHeight.value}px`,
@@ -283,8 +329,10 @@ insertBtn.addEventListener('click',e=>{
         verticalAlign:selects.verticalAlign.value,
         color:inputs.elColor.value,
         backgroundColor:inputs.elBackgroundColor.value,
-        margin:inputs.elMargin.value
+        margin:inputs.elMargin.value,
+        padding:inputs.elPadding.value
     }
+    console.log(formData)
     //1. Add to compare HTML
     const ibCSSEl = document.createElement('div')
     ibCSSEl.style.borderWidth = `${formData.borderWidth}px`
@@ -296,12 +344,13 @@ insertBtn.addEventListener('click',e=>{
     ibCSSEl.style.color = formData.color
     ibCSSEl.style.backgroundColor = formData.backgroundColor
     ibCSSEl.style.margin = formData.margin
+    ibCSSEl.style.padding = formData.padding
     ibCSSEl.classList.add(`inner`)
     ibCSSEl.classList.add(`inner-${rawCSSIbContainer.children.length+1}`)
     const refNode = rawCSSIbContainer.children[inputs.addOrder.value-1]
     rawCSSIbContainer.insertBefore(ibCSSEl,refNode)
     //2. Add to ibLayout
-    ibLayout.insertInlineblockEl({
+    inlineblockLayoutObj.insertInlineblockEl({
         width:formData.width,
         height:formData.height,
         borderWidth:formData.borderWidth,
@@ -310,11 +359,11 @@ insertBtn.addEventListener('click',e=>{
         verticalAlign:formData.verticalAlign,
         color:formData.color,
         backgroundColor:formData.backgroundColor,
-        margin:formData.margin
+        margin:formData.margin,
+        padding:formData.padding
     },inputs.addOrder.value-1)
 })
-const removeBtn = document.getElementById('remove')
-removeBtn.addEventListener('click',e=>{
+document.getElementById('remove').addEventListener('click',e=>{
     const form = document.getElementById('removeForm')
     const inputs = form.getElementsByTagName('input')
     const toBeRemovedIndex=  inputs.removeOrder.value -1
@@ -322,6 +371,6 @@ removeBtn.addEventListener('click',e=>{
         //1. Remove from compare HTML
         rawCSSIbContainer.removeChild(rawCSSIbContainer.children[toBeRemovedIndex])
         //2. Remove from ibLayout
-        ibLayout.removeInlineblockEl(toBeRemovedIndex)
+        inlineblockLayoutObj.removeInlineblockEl(toBeRemovedIndex)
     }
 })
