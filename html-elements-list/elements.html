@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HTML Elements Dictionary</title>
+</head>
+<body style="text-align: center;">
+    <h1>How to play</h1>
+    <ol>
+        <li>Open :<a href="https://html.spec.whatwg.org/">HTML Spec</a></li>
+        <li>Open console in HTML Spec Website</li>
+        <li>Copy and paste script into console</li>
+    </ol>
+    <script type="text/javascript">
+        /*
+         *Categories：标签所属的分类。
+         *Contexts in which this element can be used：标签能够用在哪里。
+         *Content model：标签的内容模型。
+         *Tag omission in text/html：标签是否可以省略。
+         *Content attributes：内容属性。
+         *DOM interface：用 WebIDL 定义的元素类型接口。
+         */
+        var elementDefinations = Array.prototype.map.call(document.querySelectorAll(".element"), e=>({
+            name:e.children[0].children[0].id.match(/the-([a-z]+)-element/) && e.children[0].children[0].id.match(/the-([a-z]+)-element/)[1],
+            innerText:e.innerText,
+        }))
+        for (const elementDefination of elementDefinations) {
+            elementDefination.categories = processCategory(elementDefination)
+            elementDefination.contentModel = processContentModel(elementDefination)
+        }
+
+        function processCategory(e){
+            const catlines = e.innerText.match(/Categories:\n([\s\S]+)\nContexts in which this element can be used:/) && e.innerText.match(/Categories:\n([\s\S]+)\nContexts in which this element can be used:/)[1].split('\n')
+            const names = []
+            for (const line of catlines) {
+                if(line.match(/([^ ]+) content./)){
+                    names.push(RegExp.$1)
+                }else if(line.match(/^(Sectioning root.|Script-supporting element.|Listed, labelable, submittable, and autocapitalize-inheriting form-associated element.|Listed, labelable, resettable, and autocapitalize-inheriting form-associated element.|Form-associated element.|Labelable element.|Listed and autocapitalize-inheriting form-associated element.|Listed and submittable form-associated element.|Listed, labelable, submittable, resettable, and autocapitalize-inheriting form-associated element.)/)){
+                    names.push(line.match(/([\s\S]+).$/)[1])
+                }
+                else if(line.match(/None./)){
+                    //filter
+                    continue
+                }else{
+                    switch (line) {
+                        case 'If the type attribute is not in the Hidden state: Listed, labelable, submittable, resettable, and autocapitalize-inheriting form-associated element.':
+                            names.push('Listed, labelable, submittable, resettable, and autocapitalize-inheriting form-associated element')
+                            break;
+                        case 'If the type attribute is in the Hidden state: Listed, submittable, resettable, and autocapitalize-inheriting form-associated element.':
+                            names.push('Listed, submittable, resettable, and autocapitalize-inheriting form-associated element')
+                            break;
+                        case 'For form-associated custom elements: Listed, labelable, submittable, and resettable form-associated element.':
+                            names.push('Listed, labelable, submittable, and resettable form-associated element')
+                            break;
+                        default:
+                            console.log(e.name)
+                            console.log(line)
+                            break;
+                    }
+                }
+            }
+            return names
+        }
+
+        function processContentModel(e){
+            const modellines = e.innerText.match(/Content model:\n([\s\S]+)\nTag omission in text\/html:/) && e.innerText.match(/Content model:\n([\s\S]+)\nTag omission in text\/html:/)[1].split('\n') ||[]
+            const names = []
+            const categories = []
+            for (const line of modellines) {
+                if(line.match(/([^ ]+) content./)){
+                    categories.push(RegExp.$1)
+                }else if(line.match(/Nothing.?|Transparent.?|See prose.?|Text.?/)){
+                    //filter
+                    continue
+                }else{
+                    switch (line) {
+                        case 'A head element followed by a body element.':
+                            names.push(...['head','body'])
+                            break;
+                        case 'If the document is an iframe srcdoc document or if title information is available from a higher-level protocol: Zero or more elements of metadata content, of which no more than one is a title element and no more than one is a base element.':
+                            categories.push('metadata')
+                            names.push(...['title','base'])
+                            break;
+                        case 'One or more h1, h2, h3, h4, h5, h6 elements, optionally intermixed with script-supporting elements.':
+                            names.push(...['h1', 'h2', 'h3', 'h4', 'h5', 'h6','script-supporting elements'])
+                            break;
+                        case 'Zero or more li and script-supporting elements.':
+                            names.push(...['li','script-supporting elements'])
+                            break;
+                        case 'Either: Zero or more groups each consisting of one or more dt elements followed by one or more dd elements, optionally intermixed with script-supporting elements.':
+                            names.push(...['dt','dd','script-supporting elements'])
+                            break;
+                        case 'Or: One or more div elements, optionally intermixed with script-supporting elements.':
+                            names.push(...['div','script-supporting elements'])
+                            break;
+                        case 'If the element is a child of a dl element: one or more dt elements followed by one or more dd elements, optionally intermixed with script-supporting elements.':
+                            names.push(...['dt','dd','script-supporting elements'])
+                            break;
+                        case 'Zero or more source elements, followed by one img element, optionally intermixed with script-supporting elements.':
+                            names.push(...['source','img','script-supporting elements'])
+                            break;
+                        case 'Zero or more param elements, then, transparent.':
+                            names.push(...['param'])
+                            break;
+                        case 'If the element has a src attribute: zero or more track elements, then transparent, but with no media element descendants.':
+                            names.push(...['track'])
+                            break;
+                        case 'If the element does not have a src attribute: zero or more source elements, then zero or more track elements, then transparent, but with no media element descendants.':
+                            names.push(...['source','track'])
+                            break;
+                        case 'In this order: optionally a caption element, followed by zero or more colgroup elements, followed optionally by a thead element, followed by either zero or more tbody elements or one or more tr elements, followed optionally by a tfoot element, optionally intermixed with one or more script-supporting elements.':
+                            names.push(...['caption','colgroup','thead','tbody','tr','tfoot','script-supporting elements'])
+                            break;
+                        case 'If the span attribute is absent: Zero or more col and template elements.':
+                            names.push(...['col','template'])
+                            break;
+                        case 'Zero or more tr and script-supporting elements.':
+                            names.push(...['tr','script-supporting elements'])
+                            break;
+                        case 'Zero or more td, th, and script-supporting elements.':
+                            names.push(...['td','th','script-supporting elements'])
+                            break;
+                        case 'Zero or more option and script-supporting elements.':
+                            names.push(...['option','script-supporting elements'])
+                            break;
+                        case 'Zero or more option, optgroup, and script-supporting elements.':
+                            names.push(...['option','optgroup','script-supporting elements'])
+                            break;
+                        case 'Or: Zero or more option and script-supporting elements.':
+                            names.push(...['option','script-supporting elements'])
+                            break;
+                        case 'When scripting is disabled, in a head element: in any order, zero or more link elements, zero or more style elements, and zero or more meta elements.':
+                            names.push(...['link','style','meta'])
+                            break;
+                        case 'When scripting is disabled, not in a head element: transparent, but there must be no noscript element descendants.':
+                            break;
+                        case 'Otherwise: text that conforms to the requirements given in the prose.':
+                            break;
+                        default:
+                            console.log(e.name)
+                            console.log(line)
+                            break;
+                    }
+                }
+            }
+            return {
+                names,
+                categories
+            }
+        }
+
+        var dictionary = Object.create(null)
+        for (const elementDefination of elementDefinations) {
+            dictionary[elementDefination.name] = elementDefination
+        }
+        console.log(dictionary)
+        function check(parent,child){
+            for (const cat of child.categories) {
+                if(parent.contentModel.categories.some(cat=>cat.toLowerCase() === cat.toLowerCase())){
+                    return true
+                }
+            }
+            if(parent.contentModel.names.some(name=>name.toLowerCase() === child.name.toLowerCase())){
+                return true
+            }
+            return false
+        }
+        console.log(check(dictionary.html,dictionary.body))
+        console.log(check(dictionary.body,dictionary.section))
+        console.log(check(dictionary.head,dictionary.style))
+        console.log(check(dictionary.div,dictionary.div))
+        console.log(check(dictionary.span,dictionary.br))
+    </script>
+</body>
+</html>
