@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Flex Layout By JS</title>
+  <style>
+      section#cssImpl{
+          margin: 20px 0;
+      }
+      section#cssImpl .parent{
+          display: flex;
+          justify-content: space-evenly;
+          flex-wrap: wrap;
+          align-content: space-between;
+          flex-direction: column;
+      }
+      section#cssImpl .parent .child4{
+          flex:2;
+      }
+      section#cssImpl .parent .child3{
+          flex:2;
+      }
+      section#cssImpl .parent .child1{
+          flex:1;
+      }
+      section#cssImpl .parent .child2{
+          flex:2;
+      }
+      .parent{
+          width: 800px;
+          height: 250px;
+          outline:solid 1px;
+      }
+      .parent >div{
+            outline:solid 1px;
+        }
+      .child1{
+        width: 200px;
+        height: 100px;
+        background-color: pink;
+      }
+      .child2{
+          width: 250px;
+          height: 100px;
+          background-color: lightblue;
+      }
+      .child3{
+          width: 250px;
+          height: 180px;
+          background-color: lightcoral;
+      }
+      .child4{
+          width: 30px;
+          height: 30px;
+          background-color: lightgoldenrodyellow;
+      }
+      section#jsImpl .parent{
+          position: relative;
+      }
+      section#jsImpl .parent > div{
+          position: absolute;
+      }
+  </style>
+</head>
+<body>
+    <section id="cssImpl">
+        <div class="parent">
+            <div class="child1">
+            </div>
+            <div class="child2">
+            </div>
+            <div class="child3">
+            </div>
+            <div class="child4">
+            </div>
+          </div>
+    </section>
+    <section id="jsImpl">
+        <div class="parent">
+            <div class="child1">
+            </div>
+            <div class="child2">
+            </div>
+            <div class="child3">
+            </div>
+            <div class="child4">
+            </div>
+          </div>
+    </section>
+<script type="text/javascript" src="./main.js"></script>
+</body>
+</html>
