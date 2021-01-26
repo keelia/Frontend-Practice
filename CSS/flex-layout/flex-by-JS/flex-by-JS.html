@@ -7,25 +7,6 @@
       section#cssImpl{
           margin: 20px 0;
       }
-      section#cssImpl .parent{
-          display: flex;
-          justify-content: space-evenly;
-          flex-wrap: wrap;
-          align-content: space-between;
-          flex-direction: column;
-      }
-      section#cssImpl .parent .child4{
-          flex:2;
-      }
-      section#cssImpl .parent .child3{
-          flex:2;
-      }
-      section#cssImpl .parent .child1{
-          flex:1;
-      }
-      section#cssImpl .parent .child2{
-          flex:2;
-      }
       .parent{
           width: 800px;
           height: 250px;
@@ -35,23 +16,15 @@
             outline:solid 1px;
         }
       .child1{
-        width: 200px;
-        height: 100px;
         background-color: pink;
       }
       .child2{
-          width: 250px;
-          height: 100px;
           background-color: lightblue;
       }
       .child3{
-          width: 250px;
-          height: 180px;
           background-color: lightcoral;
       }
       .child4{
-          width: 30px;
-          height: 30px;
           background-color: lightgoldenrodyellow;
       }
       section#jsImpl .parent{
@@ -60,33 +33,126 @@
       section#jsImpl .parent > div{
           position: absolute;
       }
+      .container{
+          display: flex;
+          flex-direction: row;
+      }
+      #layout{
+        flex-basis: 80%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+      #actions{
+        flex-basis: 20%;
+        border: 1px solid orangered;
+        padding: 5px;
+      }
+      #flexSetting{
+          display: flex;
+      }
+      #flexSetting > div{
+          padding: 10px;
+      }
+      #flexBtn{
+          float: right;
+          margin-top: 10px;
+          width: 120px;
+          height: 35px;
+      }
   </style>
 </head>
 <body>
-    <section id="cssImpl">
-        <div class="parent">
-            <div class="child1">
-            </div>
-            <div class="child2">
-            </div>
-            <div class="child3">
-            </div>
-            <div class="child4">
-            </div>
-          </div>
-    </section>
-    <section id="jsImpl">
-        <div class="parent">
-            <div class="child1">
-            </div>
-            <div class="child2">
-            </div>
-            <div class="child3">
-            </div>
-            <div class="child4">
-            </div>
-          </div>
-    </section>
+    <div class="container">
+        <div id="layout">
+            <section id="cssImpl">
+                <div class="parent">
+                    <div class="child1">
+                    </div>
+                    <div class="child2">
+                    </div>
+                    <div class="child3">
+                    </div>
+                    <div class="child4">
+                    </div>
+                  </div>
+            </section>
+            <section id="jsImpl">
+                <div class="parent">
+                    <div class="child1">
+                    </div>
+                    <div class="child2">
+                    </div>
+                    <div class="child3">
+                    </div>
+                    <div class="child4">
+                    </div>
+                  </div>
+            </section>
+        </div>
+        <div id="actions">
+            <form id="flexSetting">
+                <div style="border-right: 1px solid red;">
+                    <div>
+                        <p>Flex Direction</p>
+                        <select name="flexDirection" id="flexDirection">
+                            <option value="row" >row</option>
+                            <option value="column" selected>column</option>
+                        </select>
+                    </div>
+                    <div>
+                        <p>Flex Wrap</p>
+                    <select name="flexWrap" id="flexWrap">
+                        <option value="wrap">wrap</option>
+                        <option value="nowrap">nowrap</option>
+                    </select>
+                    </div>
+
+                    
+                    <div>  <p>Justify Content</p>
+                        <select name="justifyContent" id="justifyContent">
+                            <option value="flex-start">flex-start</option>
+                            <option value="flex-end">flex-end</option>
+                            <option value="stretch">stretch</option>
+                            <option value="center">center</option>
+                            <option value="space-evenly">space-evenly</option>
+                            <option value="space-around">space-around</option>
+                            <option value="space-between">space-between</option>
+                        </select>
+                    </div>
+                  
+                    <div>
+                        <p>Align Content</p>
+                        <select name="alignContent" id="alignContent">
+                            <option value="flex-start">flex-start</option>
+                            <option value="flex-end">flex-end</option>
+                            <option value="stretch">stretch</option>
+                            <option value="center">center</option>
+                            <option value="space-evenly">space-evenly</option>
+                            <option value="space-around">space-around</option>
+                            <option value="space-between">space-between</option>
+                        </select>
+                    </div>
+                  
+                    <div>
+                        <p>Align Items</p>
+                    <select name="alignItems" id="alignItems">
+                        <option value="flex-start">flex-start</option>
+                        <option value="flex-end">flex-end</option>
+                        <option value="stretch">stretch</option>
+                        <option value="center">center</option>
+                    </select>
+                    </div>
+                    
+                </div>
+                <div id="flexItemSettings">
+                </div>
+            </form>
+            <button type="submit" id="flexBtn">Flex</button>
+        </div>
+    </div>
+
+
 <script type="text/javascript" src="./main.js"></script>
 </body>
 </html>

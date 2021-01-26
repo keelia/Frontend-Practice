@@ -1,23 +1,3 @@
-flexLayout(document.getElementById('jsImpl').getElementsByClassName('parent')[0],{
-    flexWrap:'wrap',
-   justifyContent:'space-evenly',
-    alignContent:'space-between',
-    flexDirection:'column',
-    items:[
-        {
-            flex:1,
-        },
-        {
-             flex:2
-        },
-        {
-           flex:2
-        },
-        {
-            flex:2
-         }
-    ]
-})
 function flexLayout(container,styles =  null){
     const defaultFlexSetting = {
         flexDirection:'row',//flex-direction: row;
@@ -34,9 +14,11 @@ function flexLayout(container,styles =  null){
         justifyContent :styles && styles.justifyContent ? styles.justifyContent : defaultFlexSetting.justifyContent,
         alignContent:styles && styles.alignContent ? styles.alignContent : defaultFlexSetting.alignContent,
         flexDirection:styles && styles.flexDirection ? styles.flexDirection : defaultFlexSetting.flexDirection,
+        alignItems:styles && styles.alignItems ? styles.alignItems : defaultFlexSetting.alignItems,
         width,
         height,
     }
+    console.log(styles)
 
     if(flexContainerSetting.flexDirection === 'column'){
     //1. Divide into Cols
@@ -50,14 +32,14 @@ function flexLayout(container,styles =  null){
         oneLine.mainAxisRemainSpace = flexContainerSetting.width
         oneLine.crossAxisRemainSpace = flexContainerSetting.height
         for (let index = 0; index < flexItems.length; index++) {
-            const {width,height} = flexItems[index].getBoundingClientRect()
+            const {width,height} =  styles && styles.items && styles.items[index]  ?styles.items[index] :{width:0,height0}
             const item = {
                 domEl:flexItems[index],
                 width:width || 0,
                 height:height|| 0,
-                alignSelf:styles && styles.item && styles.item[index] && styles.item[index].alignSelf ? styles.item[index].alignSelf : defaultFlexSetting.alignSelf,
-                flex:styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? styles.items[index].flex : null,
-                isFlexible : styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? true: false,
+                alignSelf:styles && styles.items && styles.items[index] && styles.items[index].alignSelf ? styles.items[index].alignSelf : (flexContainerSetting.alignItems || defaultFlexSetting.alignSelf),
+                flex:styles && styles.items && styles.items[index] && styles.items[index].flex ? styles.items[index].flex : null,
+                isFlexible : styles && styles.items && styles.items[index] && styles.items[index].flex ? true: false,
                 top:0,
                 left:0,
                 bottom:0,
@@ -120,14 +102,14 @@ function flexLayout(container,styles =  null){
         addNewLine()
         let currentLine = flexLines[lineIndex]
         for (let index = 0; index < flexItems.length; index++) {
-            const {width,height} = flexItems[index].getBoundingClientRect()
+            const {width,height} = styles && styles.items && styles.items[index]  ?styles.items[index] :{width:0,height0}
             const item = {
                 domEl:flexItems[index],
                 width:width || 0,
                 height:height|| 0,
-                alignSelf:styles && styles.item && styles.item[index] && styles.item[index].alignSelf ? styles.item[index].alignSelf : defaultFlexSetting.alignSelf,
-                flex:styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? styles.items[index].flex : null,
-                isFlexible : styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? true: false,
+                alignSelf:styles && styles.items && styles.items[index] && styles.items[index].alignSelf ? styles.items[index].alignSelf :  (flexContainerSetting.alignItems || defaultFlexSetting.alignSelf),
+                flex:styles && styles.items && styles.items[index] && styles.items[index].flex ? styles.items[index].flex : null,
+                isFlexible : styles && styles.items && styles.items[index] && styles.items[index].flex ? true: false,
                 top:0,
                 left:0,
                 bottom:0,
@@ -140,27 +122,51 @@ function flexLayout(container,styles =  null){
                 if(currentLine.crossAxisRemainSpace >= item.height){
                     currentLine.push(item)
                 }else{
-                    currentLine = addNewLine(currentLine.mainSize,currentLine.startY)//align-content:flex-start
-                    currentLine.push(item)
+                    debugger
+                    if(currentLine.length === 0){
+                        item.height = currentLine.crossAxisRemainSpace
+                        currentLine.push(item)
+                    }else{
+                        currentLine = addNewLine(currentLine.mainSize,currentLine.startY)//align-content:flex-start
+                        currentLine.push(item)
+                    }
                 }
                 currentLine.crossAxisRemainSpace -= item.height
                 currentLine.mainSize = Math.max(currentLine.mainSize,item.width)
-                currentLine.crossSize +=item.height
+                currentLine.crossSize = Math.max(currentLine.crossSize,item.height) //currentLine.crossSize +=item.height
                 currentLine.mainAxisRemainSpace = flexContainerSetting.width - currentLine.mainSize
             }
         }
+        //scale
         console.log(flexLines)
+        debugger
+        for (const flexLine of flexLines) {
+            if(flexLine.crossAxisRemainSpace <0){
+                flexLine[0].height = flexContainerSetting.height
+                flexLine.crossAxisRemainSpace = 0
+                flexLine.crossSize = flexContainerSetting.height
+            }
+        }
+        console.log(flexLines)
+        debugger
         //Cross Axis Calculation
         let mainAxisRemainSpace = flexContainerSetting.width - (flexLines.map(item=>item.mainSize).reduce((a,c)=>a+c,0))
-        mainAxisRemainSpace = mainAxisRemainSpace < 0? 0: mainAxisRemainSpace;
+       // mainAxisRemainSpace = mainAxisRemainSpace < 0? 0: mainAxisRemainSpace;
         const alignContent = flexContainerSetting.alignContent
         if(alignContent === 'flex-start'){
-            //do nothing
+            for (let index = 0; index < flexLines.length; index++) {
+                const flexLine = flexLines[index];
+                if(index === 0){
+                    flexLine.startX = 0
+                }else{
+                    flexLine.startX = flexLines[index-1].startX+ flexLines[index-1].mainSize
+                }
+            }
         }else if(alignContent === 'flex-end'){
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
-                    flexLine.startX = Math.abs(mainAxisRemainSpace)
+                    flexLine.startX = mainAxisRemainSpace
                 }else{
                     flexLine.startX = flexLines[index-1].startX+ flexLines[index-1].mainSize
                 }
@@ -171,20 +177,20 @@ function flexLayout(container,styles =  null){
                 if(index === 0){
                     flexLine.startX = 0
                 }else{
-                    flexLine.startX = flexLines[index-1].startX + flexLines[index-1].mainSize + (Math.abs(mainAxisRemainSpace)/(flexLines.length))
+                    flexLine.startX = flexLines[index-1].startX + flexLines[index-1].mainSize + (mainAxisRemainSpace/(flexLines.length))
                 }
             }
         }else if(alignContent === 'center'){
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
-                    flexLine.startX = Math.abs(mainAxisRemainSpace)/2
+                    flexLine.startX = mainAxisRemainSpace/2
                 }else{
                     flexLine.startX = (flexLines[index-1].startX+ flexLines[index-1].mainSize)
                 }
             }
         }else if(alignContent === 'space-between'){
-            const mainSpaceUnit = Math.abs(mainAxisRemainSpace)/(flexLines.length-1)
+            const mainSpaceUnit = mainAxisRemainSpace/(flexLines.length-1)
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
@@ -194,7 +200,7 @@ function flexLayout(container,styles =  null){
                 }
             }
         }else if(alignContent === 'space-around'){
-            const mainSpaceUnit = Math.abs(mainAxisRemainSpace)/flexLines.length
+            const mainSpaceUnit = mainAxisRemainSpace/flexLines.length
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
@@ -204,7 +210,7 @@ function flexLayout(container,styles =  null){
                 }
             }
         }else if(alignContent === 'space-evenly'){
-            const mainSpaceUnit = Math.abs(mainAxisRemainSpace)/(flexLines.length+1)
+            const mainSpaceUnit = mainAxisRemainSpace/(flexLines.length+1)
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
@@ -215,19 +221,15 @@ function flexLayout(container,styles =  null){
             }
         }
         // //Main Axis Calculation
-        console.log(flexContainerSetting.justifyContent)
         for (const flexLine of flexLines) {
             flexLineColLayout(flexLine,flexContainerSetting.justifyContent)
         }
+
+        //AlignItems
+        alignFlexItems(flexLines,flexContainerSetting.alignItems,'main')
     }
     //4. Paint
-    for (const flexLine of flexLines) {
-        for (const flexItem of flexLine) {
-            flexItem.domEl.style.top = `${flexItem.top}px`
-            flexItem.domEl.style.left = `${flexItem.left}px`
-            flexItem.domEl.style.height = `${flexItem.height}px`
-        }
-    }
+    paintFlexLines(flexLines,'height')
     }else if(flexContainerSetting.flexDirection === 'row'){
     //1. Divide into Rows
     //2. Main Axis Calculation
@@ -240,14 +242,14 @@ function flexLayout(container,styles =  null){
         oneLine.mainAxisRemainSpace = flexContainerSetting.width
         oneLine.crossAxisRemainSpace = flexContainerSetting.height
         for (let index = 0; index < flexItems.length; index++) {
-            const {width,height} = flexItems[index].getBoundingClientRect()
+            const {width,height} =  styles && styles.items && styles.items[index]  ?styles.items[index] :{width:0,height0}
             const item = {
                 domEl:flexItems[index],
                 width:width || 0,
                 height:height|| 0,
-                alignSelf:styles && styles.item && styles.item[index] && styles.item[index].alignSelf ? styles.item[index].alignSelf : defaultFlexSetting.alignSelf,
-                flex:styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? styles.items[index].flex : null,
-                isFlexible : styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? true: false,
+                alignSelf:styles && styles.items && styles.items[index] && styles.items[index].alignSelf ? styles.items[index].alignSelf :  (flexContainerSetting.alignItems || defaultFlexSetting.alignSelf),
+                flex:styles && styles.items && styles.items[index] && styles.items[index].flex ? styles.items[index].flex : null,
+                isFlexible : styles && styles.items && styles.items[index] && styles.items[index].flex ? true: false,
                 top:0,
                 left:0,
                 bottom:0,
@@ -263,7 +265,6 @@ function flexLayout(container,styles =  null){
             oneLine.crossAxisRemainSpace = flexContainerSetting.height - oneLine.crossSize
         }
         flexLines.push(oneLine)
-        console.log(flexLines)
         //scale
         if(oneLine.mainAxisRemainSpace <0){
             const extraSpace =oneLine.mainAxisRemainSpace; 
@@ -309,14 +310,14 @@ function flexLayout(container,styles =  null){
         addNewLine()
         let currentLine = flexLines[lineIndex]
         for (let index = 0; index < flexItems.length; index++) {
-            const {width,height} = flexItems[index].getBoundingClientRect()
+            const {width,height} =  styles && styles.items && styles.items[index]  ?styles.items[index] :{width:0,height0}
             const item = {
                 domEl:flexItems[index],
                 width:width || 0,
                 height:height|| 0,
-                alignSelf:styles && styles.item && styles.item[index] && styles.item[index].alignSelf ? styles.item[index].alignSelf : defaultFlexSetting.alignSelf,
-                flex:styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? styles.items[index].flex : null,
-                isFlexible : styles && styles.items && styles.items[index] && (styles.items[index].flex !== undefined) ? true: false,
+                alignSelf:styles && styles.items && styles.items[index] && styles.items[index].alignSelf ? styles.items[index].alignSelf :  (flexContainerSetting.alignItems || defaultFlexSetting.alignSelf),
+                flex:styles && styles.items && styles.items[index] && styles.items[index].flex ? styles.items[index].flex : null,
+                isFlexible : styles && styles.items && styles.items[index] && styles.items[index].flex ? true: false,
                 top:0,
                 left:0,
                 bottom:0,
@@ -331,26 +332,44 @@ function flexLayout(container,styles =  null){
                 if(currentLine.mainAxisRemainSpace >= item.width){
                     currentLine.push(item)
                 }else{
-                    currentLine = addNewLine(currentLine.startX,currentLine.crossSize)//align-content:flex-start
-                    currentLine.push(item)
+                    if(currentLine.length === 0){
+                        item.width = currentLine.mainAxisRemainSpace
+                        currentLine.push(item)
+                    }else{
+                        currentLine = addNewLine(currentLine.startX,currentLine.crossSize)//align-content:flex-start
+                        currentLine.push(item)
+                    }
                 }
                 currentLine.mainAxisRemainSpace -= item.width
                 currentLine.mainSize = Math.max(currentLine.mainSize,item.width)
                 currentLine.crossSize = Math.max(currentLine.crossSize,item.height)
             }
         }
-
+       console.log(flexLines)
+        //scale
+        for (const flexLine of flexLines) {
+            if(flexLine.mainAxisRemainSpace <0){
+                flexLine[0].width = flexContainerSetting.width
+            }
+        }
         //Cross Axis Calculation
         let crossAxisRemainSpace = flexContainerSetting.height - (flexLines.map(item=>item.crossSize).reduce((a,c)=>a+c,0))
-        crossAxisRemainSpace = crossAxisRemainSpace < 0? 0: crossAxisRemainSpace;
+        //crossAxisRemainSpace = crossAxisRemainSpace < 0? 0: crossAxisRemainSpace;
         const alignContent = flexContainerSetting.alignContent
         if(alignContent === 'flex-start'){
-            //do nothing
+            for (let index = 0; index < flexLines.length; index++) {
+                const flexLine = flexLines[index];
+                if(index === 0){
+                    flexLine.startY = 0
+                }else{
+                    flexLine.startY = flexLines[index-1].startY+ flexLines[index-1].crossSize
+                }
+            }
         }else if(alignContent === 'flex-end'){
             for (let index = 0; index < flexLines.length; index++) {
                 const flexLine = flexLines[index];
                 if(index === 0){
-                    flexLine.startY = Math.abs(crossAxisRemainSpace)
+                    flexLine.startY = crossAxisRemainSpace
                 }else{
                     flexLine.startY = flexLines[index-1].startY+ flexLines[index-1].crossSize
                 }
@@ -361,7 +380,7 @@ function flexLayout(container,styles =  null){
                 if(index === 0){
                     flexLine.startY = 0
                 }else{
-                    flexLine.startY = flexLines[index-1].startY+ flexLines[index-1].crossSize + (Math.abs(crossAxisRemainSpace)/(flexLines.length))
+                    flexLine.startY = flexLines[index-1].startY+ flexLines[index-1].crossSize + (crossAxisRemainSpace/(flexLines.length))
                 }
             }
         }else if(alignContent === 'center'){
@@ -408,27 +427,24 @@ function flexLayout(container,styles =  null){
         for (const flexLine of flexLines) {
             flexLineLayout(flexLine,flexContainerSetting.justifyContent)
         }
+
+        //AlignItems
+        alignFlexItems(flexLines,flexContainerSetting.alignItems,'cross')
     }
     //4. Paint
-    for (const flexLine of flexLines) {
-        for (const flexItem of flexLine) {
-            flexItem.domEl.style.top = `${flexItem.top}px`
-            flexItem.domEl.style.left = `${flexItem.left}px`
-            flexItem.domEl.style.width = `${flexItem.width}px`
-        }
-    }
+    paintFlexLines(flexLines,'width')
     }
 }
 
+
 function flexLineColLayout(flexline,justifyContent){
-    let oneLine = flexline
-    if(oneLine.some(item=>item.isFlexible)){
-        const flexibleSpaceUnit = oneLine.crossAxisRemainSpace/oneLine.filter(item=>item.isFlexible).map(item=>item.flex).reduce((a,b)=>a+b,0)
-        for (const flexibleItem of oneLine.filter(item=>item.isFlexible)) {
+    if(flexline.some(item=>item.isFlexible)){
+        const flexibleSpaceUnit = flexline.crossAxisRemainSpace/flexline.filter(item=>item.isFlexible).map(item=>item.flex).reduce((a,b)=>a+b,0)
+        for (const flexibleItem of flexline.filter(item=>item.isFlexible)) {
             flexibleItem.height = flexibleItem.flex * flexibleSpaceUnit
         }
         let startX = flexline.startX, startY = flexline.startY;
-        for (const flexItem of oneLine) {
+        for (const flexItem of flexline) {
             flexItem.top = startY
             flexItem.left = startX
             startY+=flexItem.height
@@ -437,36 +453,36 @@ function flexLineColLayout(flexline,justifyContent){
         //justify-content takes effect then
         if(justifyContent === 'flex-start'){
             let startX = flexline.startX || 0, startY = flexline.startY || 0;
-            for (const flexItem of oneLine) {
+            for (const flexItem of flexline) {
                 flexItem.top = startY
                 flexItem.left = startX
                 startY+=flexItem.height
             }
         }else if(justifyContent === 'flex-end'){
             let startX =flexline.startX || 0, startY = flexline.crossAxisRemainSpace;
-            for (const flexItem of oneLine) {
+            for (const flexItem of flexline) {
                 flexItem.top = startY
                 flexItem.left = startX
                 startY+=flexItem.height
             }
         }else if(justifyContent === 'stretch'){
             let startX = flexline.startX || 0, startY = flexline.startY || 0;
-            for (const flexItem of oneLine) {
+            for (const flexItem of flexline) {
                 flexItem.top = startY
                 flexItem.left = startX
                 startY+=flexItem.height
             }
         }else if(justifyContent === 'center'){
-            let startX =  flexline.startY || 0 , startY =oneLine.crossAxisRemainSpace/2 + (flexline.startY || 0);
-            for (const flexItem of oneLine) {
+            let startX =  flexline.startX || 0 , startY =flexline.crossAxisRemainSpace/2 + (flexline.startY || 0);
+            for (const flexItem of flexline) {
                 flexItem.top = startY
                 flexItem.left = startX
                 startY+=flexItem.height
             }
         }else if(justifyContent === 'space-between'){
             let startX = flexline.startX || 0, startY = flexline.startY || 0;
-            for (let index = 0; index < oneLine.length; index++) {
-                const flexItem = oneLine[index];
+            for (let index = 0; index < flexline.length; index++) {
+                const flexItem = flexline[index];
                 if(index!== 0){
                     startY+=oneLine.crossAxisRemainSpace/(oneLine.length -1)
                 }
@@ -476,12 +492,12 @@ function flexLineColLayout(flexline,justifyContent){
             }
         }else if(justifyContent === 'space-around'){
             let startX = flexline.startX || 0, startY = flexline.startY || 0;
-            for (let index = 0; index < oneLine.length; index++) {
-                const flexItem = oneLine[index];
+            for (let index = 0; index < flexline.length; index++) {
+                const flexItem = flexline[index];
                 if(index === 0){
-                    startY+=(oneLine.crossAxisRemainSpace/(oneLine.length))/2
+                    startY+=(flexline.crossAxisRemainSpace/(flexline.length))/2
                 }else{
-                    startY+=(oneLine.crossAxisRemainSpace/(oneLine.length))
+                    startY+=(flexline.crossAxisRemainSpace/(flexline.length))
                 }
                 flexItem.top = startY
                 flexItem.left = startX
@@ -489,10 +505,9 @@ function flexLineColLayout(flexline,justifyContent){
             }
         }else if(justifyContent === 'space-evenly'){
             let startX = flexline.startX || 0, startY = flexline.startY || 0;
-            console.log(startX,startY)
-            for (let index = 0; index < oneLine.length; index++) {
-                const flexItem = oneLine[index];
-                startY+=oneLine.crossAxisRemainSpace/(oneLine.length+1)
+            for (let index = 0; index < flexline.length; index++) {
+                const flexItem = flexline[index];
+                startY+=flexline.crossAxisRemainSpace/(flexline.length+1)
                 flexItem.top = startY
                 flexItem.left = startX
                 startY+=flexItem.height
@@ -580,3 +595,148 @@ function flexLineLayout(flexline,justifyContent){
         }
     }
 }
+
+function alignFlexItems(flexLines,alignItems,axis){
+    let sizeType = 'width',axisSize = 'mainSize',startPoint = 'left'
+    if(axis === 'cross'){
+        sizeType = 'height'
+        axisSize = 'crossSize'
+        startPoint = 'top'
+    }
+    for (const flexLine of flexLines) {
+        for (const flexItem of flexLine) {
+            const align = flexItem.alignSelf || alignItems
+            if(align ==='flex-start'){
+                    //do nothing
+            }else if(align === 'flex-end'){
+                if(flexItem[sizeType] !==  flexLine[axisSize]){
+                    flexItem[startPoint] +=Math.abs(flexLine[axisSize] - flexItem[sizeType])
+                }
+            }else if(align === 'stretch'){
+                //do nothing
+            }else if(align === 'center'){
+                if(flexItem[sizeType] !==  flexLine[axisSize]){
+                    flexItem[startPoint] +=Math.abs(flexLine[axisSize] - flexItem[sizeType])/2
+                }
+            }
+        }
+    }
+}
+
+function paintFlexLines(flexLines,sideType){
+    const opside = sideType === 'width' ?'height':'width'
+    for (const flexLine of flexLines) {
+        for (const flexItem of flexLine) {
+            flexItem.domEl.style.top = `${flexItem.top}px`
+            flexItem.domEl.style.left = `${flexItem.left}px`
+            flexItem.domEl.style[sideType] = `${flexItem[sideType]}px`
+            flexItem.domEl.style[opside] = `${flexItem[opside]}px`
+        }
+    }
+}
+
+
+const flexBtn = document.getElementById('flexBtn')
+flexBtn.addEventListener('click',e=>{
+    applyStyles(getFormSetting(),document.getElementById('cssImpl').getElementsByClassName('parent')[0])
+    flexLayout(document.getElementById('jsImpl').getElementsByClassName('parent')[0],getFormSetting())
+})
+
+//render flexItem Settings
+const flexItemSettings = document.getElementById('flexItemSettings')
+const cssImpl = document.getElementById('cssImpl')
+for (const child of cssImpl.children[0].children) {
+    const div = document.createElement('div')
+    const p = document.createElement('p')
+    p.innerText = child.classList
+    div.appendChild(p)
+    const setting = document.createElement('div')
+    const alignSelf = document.createElement('p')
+    alignSelf.innerText = 'Align Self'
+    setting.appendChild(alignSelf)
+    const select = document.createElement('select')
+    select.id = 'alignSelf'
+    const innerHTML = `  <option value="flex-start">flex-start</option>
+    <option value="flex-end">flex-end</option>
+    <option value="stretch">stretch</option>
+    <option value="center">center</option>`
+    select.innerHTML = innerHTML
+    
+    setting.appendChild(select)
+
+    const flex = document.createElement('p')
+    flex.innerText = 'Flex'
+    setting.appendChild(flex)
+    const input = document.createElement('input')
+    input.type = 'number'
+    input.value = 0
+    input.id = 'flex'
+    setting.appendChild(input)
+
+    const width = document.createElement('p')
+    width.innerText = 'Width'
+    setting.appendChild(width)
+    const widthInput = document.createElement('input')
+    widthInput.type = 'number'
+    widthInput.value = Number((Math.random() * 100).toFixed(0))
+    widthInput.id = 'width'
+    setting.appendChild(widthInput)
+
+
+    const height = document.createElement('p')
+    height.innerText = 'Height'
+    setting.appendChild(height)
+    const heightInput = document.createElement('input')
+    heightInput.type = 'number'
+    heightInput.value = Number((Math.random() * 100).toFixed(0))
+    heightInput.id = 'height'
+    setting.appendChild(heightInput)
+
+    div.appendChild(setting)
+    flexItemSettings.appendChild(div)
+}
+
+
+function getFormSetting(){
+    const form = document.getElementById('flexSetting')
+    let count = 0;
+    const items = []
+    while (count <form.alignSelf.length) {
+        items.push({
+            alignSelf:form.alignSelf[count].value,
+            flex:isNaN(Number(form.flex[count].value)) ? 0 : Number(form.flex[count].value),
+            width:isNaN(Number(form.width[count].value)) ? 0 : Number(form.width[count].value),
+            height: isNaN(Number(form.height[count].value)) ? 0 : Number(form.height[count].value),
+        })
+        count++
+    }
+    return {
+        flexDirection:form.flexDirection.value,
+        justifyContent:form.justifyContent.value,
+        alignItems: form.alignItems.value,
+        flexWrap:form.flexWrap.value,
+        alignContent:form.alignContent.value,
+        items
+    }
+}
+applyStyles(getFormSetting(),document.getElementById('cssImpl').getElementsByClassName('parent')[0])
+function applyStyles(flexStyles,container){
+    container.style.display = 'flex'
+    container.style.flexDirection = flexStyles.flexDirection
+    container.style.justifyContent = flexStyles.justifyContent
+    container.style.alignItems = flexStyles.alignItems
+    container.style.flexWrap = flexStyles.flexWrap
+    container.style.alignContent = flexStyles.alignContent
+    for (let index = 0; index < container.children.length; index++) {
+        const child = container.children[index];
+        child.style.alignSelf= flexStyles.items[index].alignSelf
+        child.style.flex= flexStyles.items[index].flex  ?flexStyles.items[index].flex :null
+
+        child.style.width= isNaN(Number(flexStyles.items[index].width)) ? 0 : `${Number(flexStyles.items[index].width)}px` 
+        child.style.height= isNaN(Number(flexStyles.items[index].height)) ? 0 : `${Number(flexStyles.items[index].height)}px` 
+
+
+    }
+}
+
+flexLayout(document.getElementById('jsImpl').getElementsByClassName('parent')[0],getFormSetting())
